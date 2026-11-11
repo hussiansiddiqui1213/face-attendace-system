@@ -20,7 +20,7 @@ For macOS/Linux, activate the environment with `source .venv/bin/activate`, set 
 
 ## Use
 
-- **Kiosk:** scans one face at a time. Students are recorded once per day; staff scans alternate between check-in and check-out.
+- **Kiosk:** scans one face at a time. Students are recorded once per day; staff scans alternate between check-in and check-out. If camera access fails, allow it in the browser and select **Allow / retry camera**. **Enter attendance manually** opens the admin sign-in and manual-entry form for a non-biometric alternative.
 - **Admin:** upload a school/centre roster CSV, filter a daily present/absent report by centre and class, export it to CSV, enroll faces, add manual attendance with a reason, review consent/data status, and erase personal data.
 - **Project settings:** use the gear menu in the top bar to switch between dark and light themes. Admins can change the password from the security settings panel.
 - Admin sessions expire after eight hours. Five failed logins from the same address within 15 minutes are temporarily rate limited.

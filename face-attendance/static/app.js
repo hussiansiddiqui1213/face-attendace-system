@@ -11,8 +11,10 @@ const detectorOptions = () => new faceapi.TinyFaceDetectorOptions({ inputSize: 3
 
 let activeTab = 'checkin';
 let cameraReady = false;
+let cameraInitializing = false;
 let scanBusy = false;
 let busyUntil = 0;
+let openManualAfterLogin = false;
 let showAllDates = false;
 let token = sessionStorage.getItem('attendance-token') || '';
 let enrolledPeople = [];
@@ -45,6 +47,14 @@ function setStatus(element, message, tone = 'muted') {
 
 async function initializeCamera() {
   const load = $('load');
+  if (cameraReady || cameraInitializing) return;
+  cameraInitializing = true;
+  $('retryCamera').disabled = true;
+  $('cameraState').textContent = 'CAMERA STARTING';
+  $('cameraTag').textContent = 'CAMERA STARTING';
+  load.hidden = false;
+  load.classList.remove('load-error');
+  load.textContent = 'Initializing face models and camera access…';
   try {
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -58,13 +68,23 @@ async function initializeCamera() {
     $('v1').srcObject = stream;
     $('v2').srcObject = stream;
     cameraReady = true;
-    load.remove();
+    load.hidden = true;
+    $('retryCamera').hidden = true;
+    $('cameraState').textContent = 'CAMERA ACTIVE';
+    $('cameraTag').textContent = 'LIVE PREVIEW';
+    $('cameraTag').parentElement.classList.add('camera-ready');
     setStatus($('st'), 'Camera ready. Look toward the lens.', 'muted');
     scanLoop();
   } catch (error) {
     load.classList.add('load-error');
     load.textContent = `Camera could not start: ${error.message}. Use localhost, allow camera access, and check model downloads.`;
+    $('retryCamera').hidden = false;
+    $('cameraState').textContent = 'CAMERA UNAVAILABLE';
+    $('cameraTag').textContent = 'NO CAMERA FEED';
     setStatus($('st'), 'Camera unavailable. Ask the administrator for manual attendance.', 'bad');
+  } finally {
+    cameraInitializing = false;
+    $('retryCamera').disabled = false;
   }
 }
 
@@ -119,6 +139,20 @@ $('nav').addEventListener('click', event => {
   });
   if (selectedTab === 'admin' && token) showAdmin();
 });
+
+function openManualAttendance() {
+  $('nav').querySelector('[data-t="admin"]').click();
+  if (token) {
+    $('manualAttendanceSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  openManualAfterLogin = true;
+  $('lerr').textContent = 'Administrator sign-in is required to add a manual attendance record.';
+  $('pw').focus();
+}
+
+$('openManualAttendance').addEventListener('click', openManualAttendance);
+$('retryCamera').addEventListener('click', initializeCamera);
 
 function closeSettingsMenu() {
   $('settingsMenu').hidden = true;
@@ -189,6 +223,10 @@ $('loginBtn').addEventListener('click', async () => {
     setPasswordVisible(false);
     $('lerr').textContent = '';
     showAdmin();
+    if (openManualAfterLogin) {
+      openManualAfterLogin = false;
+      window.setTimeout(() => $('manualAttendanceSection').scrollIntoView({ behavior: 'smooth', block: 'center' }), 0);
+    }
   } catch (error) {
     $('lerr').textContent = error.message;
   }

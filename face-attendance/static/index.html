@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080d14">
   <meta name="description" content="MHHS Attendance System for attendance records and administration.">
   <title>MHHS Attendance System</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
   <div class="app-shell">
@@ -52,7 +52,7 @@
             <h1>Attendance <span>kiosk</span></h1>
             <p class="heading-copy">Position yourself in frame to register today’s attendance.</p>
           </div>
-          <div class="live-label"><span class="pulse-dot" aria-hidden="true"></span><span>CAMERA ACTIVE</span><span class="label-divider"></span><span>LOCAL PROCESSING</span></div>
+          <div class="live-label"><span class="pulse-dot" aria-hidden="true"></span><span id="cameraState">CAMERA STARTING</span><span class="label-divider"></span><span>LOCAL PROCESSING</span></div>
         </div>
 
         <div class="kiosk-grid">
@@ -62,11 +62,14 @@
               <div class="camera-vignette" aria-hidden="true"></div>
               <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
               <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
-              <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span> LIVE PREVIEW</span><span class="camera-code">CAM / 01</span></div>
+              <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span><span id="cameraTag">CAMERA STARTING</span></span><span class="camera-code">CAM / 01</span></div>
               <div class="scan-guide" aria-hidden="true"><span></span></div>
               <div class="camera-bottomline"><span>FACE SCAN AREA</span><span class="camera-resolution">640 × 480</span></div>
             </div>
-            <div class="camera-caption"><span class="caption-icon" aria-hidden="true">◉</span> Your camera feed stays in this browser. No photos are uploaded.</div>
+            <div class="camera-tools">
+              <div class="camera-caption"><span class="caption-icon" aria-hidden="true">◉</span> Your camera feed stays in this browser. No photos are uploaded.</div>
+              <button class="secondary-button" id="retryCamera" type="button" hidden>Allow / retry camera</button>
+            </div>
           </div>
           <div class="kiosk-side">
             <div class="status-panel">
@@ -80,10 +83,15 @@
               <p class="eyebrow">HOW IT WORKS</p>
               <div class="guidance-row"><span class="guide-number">01</span><span>Face the camera in clear, even lighting.</span></div>
               <div class="guidance-row"><span class="guide-number">02</span><span>Students are recorded once a day; staff scans alternate check-in and check-out.</span></div>
-              <div class="guidance-row"><span class="guide-number">03</span><span>If scanning does not work, ask the staffed desk for help.</span></div>
+              <div class="guidance-row"><span class="guide-number">03</span><span>If scanning does not work, an administrator can enter attendance manually.</span></div>
             </div>
             <div class="privacy-card"><span class="privacy-symbol" aria-hidden="true">◇</span><span><strong>Privacy notice</strong> Face descriptors are sensitive biometric data and are stored by this local pilot.</span></div>
           </div>
+        </div>
+        <div class="kiosk-manual">
+          <span>Prefer not to use face recognition, or having camera trouble?</span>
+          <button class="secondary-button" id="openManualAttendance" type="button">Enter attendance manually</button>
+          <span class="upload-hint">Administrator sign-in is required. Manual records include a reason.</span>
         </div>
         <div class="kiosk-footnote"><span>MHHS / KIOSK</span><span>FACIAL MATCHING CAN BE WRONG — VERIFY EXCEPTIONS WITH A PERSON</span></div>
       </section>
@@ -200,7 +208,7 @@
               </div>
             </section>
 
-            <section class="admin-section manual-section">
+            <section class="admin-section manual-section" id="manualAttendanceSection">
               <div class="section-title"><div><p class="eyebrow">ACCESSIBILITY / ALTERNATIVE</p><h2>Manual attendance</h2></div><span class="section-icon" aria-hidden="true">↗</span></div>
               <div class="manual-grid">
                 <div><label for="manualPerson">Person</label><select id="manualPerson"></select></div>
@@ -279,6 +287,6 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

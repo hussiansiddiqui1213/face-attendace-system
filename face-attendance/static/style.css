@@ -242,7 +242,13 @@ video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cov
 .scan-guide::before, .scan-guide::after { position: absolute; inset: 0; border: 1px solid rgba(102, 228, 206, .2); border-radius: 48% 48% 45% 45%; content: ''; }
 .scan-guide::after { inset: 11%; border-style: dashed; border-color: rgba(102, 228, 206, .22); }
 .scan-guide span { width: 1px; height: 100%; background: linear-gradient(transparent, rgba(102, 228, 206, .22), transparent); }
+.camera-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .camera-caption { display: flex; align-items: center; gap: 8px; padding: 11px 2px 0; color: var(--muted); font-size: 10px; }
+.camera-tools .secondary-button { margin-top: 9px; }
+.camera-tag.camera-ready .tag-light { background: var(--cyan); box-shadow: 0 0 10px rgba(102, 228, 206, .72); }
+.kiosk-manual { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 8px; background: rgba(17, 26, 36, .72); color: var(--muted); font-size: 11px; }
+.kiosk-manual .upload-hint { margin: 0; }
+.kiosk-footnote { margin-top: 15px; }
 .caption-icon { color: var(--cyan); font-size: 12px; }
 .kiosk-side { display: flex; flex-direction: column; gap: 12px; }
 .status-panel, .guidance-card, .privacy-card, .admin-section, .login-panel {
@@ -463,6 +469,7 @@ html[data-theme="light"] .secondary-button { border-color: #b8c8bc; background: 
 html[data-theme="light"] .secondary-button:hover { border-color: var(--cyan); background: #e7f3ed; color: #075e51; }
 html[data-theme="light"] .quiet-button { color: #53645a; }
 html[data-theme="light"] .manual-section, html[data-theme="light"] .roster-section, html[data-theme="light"] .settings-section { background: linear-gradient(145deg, #fff, #f8fbf8); }
+html[data-theme="light"] .kiosk-manual { border-color: var(--line); background: rgba(255, 255, 255, .8); color: var(--muted); }
 html[data-theme="light"] .table-wrap { border-color: var(--line); }
 html[data-theme="light"] th { background: #edf3ee; color: #52645a; }
 html[data-theme="light"] td { color: #34463b; }
