@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d14">
+  <meta name="description" content="MHHS Attendance System for attendance records and administration.">
+  <title>MHHS Attendance System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#checkin" aria-label="MHHS Attendance System home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M7 10.5V7h5.5M20 7H25v5.5M25 21.5V25h-5.5M12.5 25H7v-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="15" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 22c1.2-2 2.8-3 5-3s3.8 1 5 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <span class="brand-copy"><strong>MHHS</strong><small>ATTENDANCE SYSTEM</small></span>
+      </a>
+      <div class="topbar-right">
+        <span class="system-state"><span class="state-light" aria-hidden="true"></span> LOCAL SYSTEM</span>
+        <div class="settings-control">
+          <button class="settings-toggle" id="settingsToggle" type="button" aria-label="Open project settings" aria-expanded="false" aria-controls="settingsMenu" title="Project settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1-.1 2Z"/></svg>
+          </button>
+          <div class="settings-menu" id="settingsMenu" role="region" aria-label="Project settings" hidden>
+            <p class="eyebrow">DISPLAY / PREFERENCES</p>
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
+            <button class="settings-link" id="openProjectSettings" type="button"><span>Security &amp; project settings</span><span aria-hidden="true">↗</span></button>
+            <p class="settings-hint">Theme preference is saved in this browser.</p>
+          </div>
+        </div>
+        <nav id="nav" aria-label="Main navigation" role="tablist">
+          <button type="button" data-t="checkin" class="on" role="tab" aria-selected="true"><span class="nav-icon" aria-hidden="true">⌁</span> Kiosk</button>
+          <button type="button" data-t="admin" role="tab" aria-selected="false"><span class="nav-icon" aria-hidden="true">▦</span> Admin</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="pilot-note">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <span><strong>LOCAL PILOT</strong> &nbsp; Not for consequential attendance decisions without human review and a non-biometric alternative.</span>
+      </div>
+      <div id="load" class="load-state" role="status"><span class="loader" aria-hidden="true"></span> Initializing face models and camera access…</div>
+
+      <section id="checkin" class="on" role="tabpanel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> SELF-SERVICE STATION / 01</p>
+            <h1>Attendance <span>kiosk</span></h1>
+            <p class="heading-copy">Position yourself in frame to register today’s attendance.</p>
+          </div>
+          <div class="live-label"><span class="pulse-dot" aria-hidden="true"></span><span>CAMERA ACTIVE</span><span class="label-divider"></span><span>LOCAL PROCESSING</span></div>
+        </div>
+
+        <div class="kiosk-grid">
+          <div class="camera-column">
+            <div class="camera-frame">
+              <video id="v1" autoplay muted playsinline aria-label="Live camera preview"></video>
+              <div class="camera-vignette" aria-hidden="true"></div>
+              <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
+              <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
+              <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span> LIVE PREVIEW</span><span class="camera-code">CAM / 01</span></div>
+              <div class="scan-guide" aria-hidden="true"><span></span></div>
+              <div class="camera-bottomline"><span>FACE SCAN AREA</span><span class="camera-resolution">640 × 480</span></div>
+            </div>
+            <div class="camera-caption"><span class="caption-icon" aria-hidden="true">◉</span> Your camera feed stays in this browser. No photos are uploaded.</div>
+          </div>
+          <div class="kiosk-side">
+            <div class="status-panel">
+              <div class="panel-topline"><p class="eyebrow">RECOGNITION STATUS</p><span class="status-index">01 — READY</span></div>
+              <div class="status" id="st" aria-live="polite">Look toward the camera.</div>
+              <div class="status-track" aria-hidden="true"><span></span></div>
+              <div class="scan-meta"><span class="meta-label">MODE</span><span>Automatic recognition</span></div>
+              <div class="scan-meta"><span class="meta-label">ACCESS</span><span>One person at a time</span></div>
+            </div>
+            <div class="guidance-card">
+              <p class="eyebrow">HOW IT WORKS</p>
+              <div class="guidance-row"><span class="guide-number">01</span><span>Face the camera in clear, even lighting.</span></div>
+              <div class="guidance-row"><span class="guide-number">02</span><span>Students are recorded once a day; staff scans alternate check-in and check-out.</span></div>
+              <div class="guidance-row"><span class="guide-number">03</span><span>If scanning does not work, ask the staffed desk for help.</span></div>
+            </div>
+            <div class="privacy-card"><span class="privacy-symbol" aria-hidden="true">◇</span><span><strong>Privacy notice</strong> Face descriptors are sensitive biometric data and are stored by this local pilot.</span></div>
+          </div>
+        </div>
+        <div class="kiosk-footnote"><span>MHHS / KIOSK</span><span>FACIAL MATCHING CAN BE WRONG — VERIFY EXCEPTIONS WITH A PERSON</span></div>
+      </section>
+
+      <section id="admin" role="tabpanel" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> CONTROL ROOM / 02</p>
+            <h1>Admin <span>console</span></h1>
+            <p class="heading-copy">Manage centres, attendance, privacy, enrollment, and records.</p>
+          </div>
+          <div class="console-label"><span class="console-icon" aria-hidden="true">▦</span> RESTRICTED ACCESS</div>
+        </div>
+
+        <div id="loginBox" class="login-panel">
+          <div class="login-visual">
+            <div class="login-orbit" aria-hidden="true"><span></span><i></i></div>
+            <p class="eyebrow">SECURE WORKSPACE</p>
+            <h2>Administrator<br>sign in</h2>
+            <p class="subcopy">Access is limited to the local administrator. Your session expires after eight hours.</p>
+            <div class="login-foot"><span class="state-light" aria-hidden="true"></span> SESSION PROTECTED</div>
+          </div>
+          <div class="login-fields">
+            <div class="form-intro"><span class="form-step">01</span><span>Enter your administrator credentials to continue.</span></div>
+            <label for="pw">Admin password</label>
+            <div class="password-field">
+              <input id="pw" type="password" autocomplete="current-password" placeholder="Enter your password">
+              <button class="password-toggle" id="passwordToggle" type="button" aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg id="passwordEye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg id="passwordEyeOff" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.9M6.6 6.6C3.6 8.3 2 12 2 12s3.6 7 10 7c1.4 0 2.7-.3 3.8-.8"/></svg>
+              </button>
+            </div>
+            <button class="primary-button" id="loginBtn" type="button"><span>Access console</span><span aria-hidden="true">↗</span></button>
+            <p class="form-error" id="lerr" role="alert"></p>
+            <p class="login-hint">The server must be started with an administrator password.</p>
+          </div>
+        </div>
+
+        <div id="adminBox" hidden>
+          <section class="overview-section" aria-label="Attendance overview">
+            <div class="overview-heading">
+              <div><p class="eyebrow">AT A GLANCE</p><h2>Attendance overview</h2></div>
+              <span class="overview-period" id="overviewPeriod">For today</span>
+            </div>
+            <div class="overview-grid">
+              <article class="overview-card">
+                <span class="overview-icon" aria-hidden="true">◎</span>
+                <span class="overview-label">ENROLLED PEOPLE</span>
+                <strong class="overview-value" id="overviewPeople">0</strong>
+                <span class="overview-detail">Biometric records in directory</span>
+              </article>
+              <article class="overview-card">
+                <span class="overview-icon" aria-hidden="true">▤</span>
+                <span class="overview-label">ATTENDANCE RECORDS</span>
+                <strong class="overview-value" id="overviewRecords">0</strong>
+                <span class="overview-detail">In the selected date range</span>
+              </article>
+              <article class="overview-card">
+                <span class="overview-icon" aria-hidden="true">⌖</span>
+                <span class="overview-label">FACE SCANS</span>
+                <strong class="overview-value" id="overviewFace">0</strong>
+                <span class="overview-detail">Records added by recognition</span>
+              </article>
+              <article class="overview-card">
+                <span class="overview-icon" aria-hidden="true">＋</span>
+                <span class="overview-label">MANUAL ENTRIES</span>
+                <strong class="overview-value" id="overviewManual">0</strong>
+                <span class="overview-detail">Records added by an admin</span>
+              </article>
+            </div>
+          </section>
+          <div class="admin-grid">
+            <section class="admin-section settings-section" id="projectSettings">
+              <div class="section-title">
+                <div><p class="eyebrow">ACCOUNT / PROJECT SETTINGS</p><h2>Security &amp; preferences</h2></div>
+                <span class="section-icon" aria-hidden="true">⚙</span>
+              </div>
+              <p class="section-copy">Change the administrator password. Your new password is stored as a salted hash, and all active admin sessions are signed out after the change.</p>
+              <div class="password-change-grid">
+                <div><label for="currentAdminPassword">Current password</label><input id="currentAdminPassword" type="password" autocomplete="current-password"></div>
+                <div><label for="newAdminPassword">New password</label><input id="newAdminPassword" type="password" autocomplete="new-password" minlength="12"></div>
+                <div><label for="confirmAdminPassword">Confirm new password</label><input id="confirmAdminPassword" type="password" autocomplete="new-password" minlength="12"></div>
+              </div>
+              <div class="manual-actions"><button class="secondary-button" id="changeAdminPassword" type="button"><span>Change admin password</span><span aria-hidden="true">↗</span></button><span class="status-line" id="passwordChangeStatus" role="status" aria-live="polite"></span></div>
+              <div class="settings-facts"><span><b>STUDENT ATTENDANCE</b> Once per day</span><span><b>STAFF ATTENDANCE</b> Check-in / check-out</span><span><b>ADMIN SESSION</b> 8 hours</span></div>
+            </section>
+
+            <section class="admin-section enrollment-section">
+              <div class="section-title"><div><p class="eyebrow">PEOPLE / ENROLLMENT</p><h2>Add a person</h2></div><span class="section-icon" aria-hidden="true">＋</span></div>
+              <div class="enroll-grid">
+                <div class="camera-frame admin-camera">
+                  <video id="v2" autoplay muted playsinline aria-label="Live camera preview for enrollment"></video>
+                  <div class="camera-vignette" aria-hidden="true"></div>
+                  <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
+                  <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
+                  <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span> ENROLLMENT FEED</span></div>
+                  <div class="scan-guide" aria-hidden="true"><span></span></div>
+                </div>
+                <div class="form-stack">
+                  <div class="field-pair">
+                    <div><label for="nm">Full name</label><input id="nm" maxlength="120" autocomplete="off" placeholder="e.g. Alex Morgan"></div>
+                    <div><label for="pid">ID / roll number</label><input id="pid" maxlength="64" autocomplete="off" placeholder="e.g. STU-1042"></div>
+                  </div>
+                  <label for="rl">Role</label>
+                  <select id="rl"><option>Student</option><option>Faculty</option><option>Office staff</option></select>
+                  <div class="field-pair location-pair">
+                    <div><label for="centerName">School / centre</label><input id="centerName" maxlength="120" placeholder="e.g. North Campus"></div>
+                    <div><label for="groupName">Class / group</label><input id="groupName" maxlength="120" placeholder="e.g. Grade 8 A"></div>
+                  </div>
+                  <label class="consent-check"><input id="consent" type="checkbox"><span>I have explained the biometric processing and recorded the person's consent.</span></label>
+                  <button class="primary-button" id="cap" type="button"><span>Capture 5 samples</span><span aria-hidden="true">⌖</span></button>
+                  <p class="status-line" id="es" aria-live="polite"></p>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-section manual-section">
+              <div class="section-title"><div><p class="eyebrow">ACCESSIBILITY / ALTERNATIVE</p><h2>Manual attendance</h2></div><span class="section-icon" aria-hidden="true">↗</span></div>
+              <div class="manual-grid">
+                <div><label for="manualPerson">Person</label><select id="manualPerson"></select></div>
+                <div><label for="manualDate">Date</label><input id="manualDate" type="date"></div>
+                <div><label for="manualType">Record type</label><select id="manualType"><option>Present</option><option>Check-in</option><option>Check-out</option></select></div>
+                <div><label for="manualNote">Reason / note</label><input id="manualNote" maxlength="500" placeholder="Required for the audit record"></div>
+              </div>
+              <div class="manual-actions"><button class="secondary-button" id="manualSave" type="button"><span>Add manual record</span><span aria-hidden="true">↗</span></button><span id="manualStatus" class="status-line" aria-live="polite"></span></div>
+            </section>
+
+            <section class="admin-section roster-section">
+              <div class="section-title">
+                <div><p class="eyebrow">BULK SETUP / DIRECTORY</p><h2>Upload attendance roster</h2></div>
+                <span class="section-icon" aria-hidden="true">⇧</span>
+              </div>
+              <p class="section-copy">Upload a CSV of everyone expected at a school or centre. IDs already in the roster are updated; new rows are added. Face enrollment is not required for absence reporting.</p>
+              <div class="roster-upload-row">
+                <div class="upload-field"><label for="rosterFile">Roster CSV</label><input id="rosterFile" type="file" accept=".csv,text/csv"></div>
+                <button class="primary-button" id="rosterImport" type="button"><span>Upload roster</span><span aria-hidden="true">↑</span></button>
+                <button class="secondary-button" id="rosterTemplate" type="button">Download CSV template</button>
+              </div>
+              <p class="status-line" id="rosterStatus" aria-live="polite"></p>
+              <p class="upload-hint">Required columns: <code>id,name,role,center</code>. Optional: <code>class</code>. Roles: Student, Faculty, Office staff. Maximum 5,000 rows.</p>
+            </section>
+
+            <section class="admin-section report-section">
+              <div class="section-title">
+                <div><p class="eyebrow">ROSTER CHECK / DAILY REPORT</p><h2>Present and absent</h2></div>
+                <button class="secondary-button" id="reportCsv" type="button">Export report <span aria-hidden="true">↓</span></button>
+              </div>
+              <div class="report-filters">
+                <div><label for="reportDate">Attendance date</label><input id="reportDate" type="date"></div>
+                <div><label for="reportCenter">School / centre</label><select id="reportCenter"><option value="">All centres</option></select></div>
+                <div><label for="reportGroup">Class / group</label><select id="reportGroup"><option value="">All classes</option></select></div>
+                <div><label for="reportStatus">Show</label><select id="reportStatus"><option value="all">Everyone</option><option value="present">Present</option><option value="absent">Absent</option></select></div>
+              </div>
+              <div class="report-counts" aria-live="polite">
+                <div><span>EXPECTED</span><strong id="reportTotal">0</strong></div>
+                <div class="present-count"><span>PRESENT</span><strong id="reportPresent">0</strong></div>
+                <div class="absent-count"><span>ABSENT</span><strong id="reportAbsent">0</strong></div>
+              </div>
+              <div class="table-wrap"><table id="attendanceReport"></table></div>
+              <p class="upload-hint">Absence means no attendance record exists for this roster member on the selected date. Check holidays, schedules, and corrections before acting on this list.</p>
+            </section>
+
+            <section class="admin-section privacy-section">
+              <div class="section-title">
+                <div><p class="eyebrow">ADMIN ONLY / DATA RIGHTS</p><h2>Privacy &amp; personal data</h2></div>
+                <span class="section-icon" aria-hidden="true">◇</span>
+              </div>
+              <p class="section-copy">Review face-data and consent status. “Erase all” permanently removes the person's roster entry, face descriptor, and attendance history from this database.</p>
+              <p class="upload-hint">Consent dates are recorded during face enrollment. A roster CSV upload does not mean biometric consent was given.</p>
+              <p class="status-line" id="privacyStatus" role="status" aria-live="polite"></p>
+              <div class="table-wrap"><table id="privacyDirectory"></table></div>
+            </section>
+
+            <section class="admin-section">
+              <div class="section-title"><div><p class="eyebrow">DIRECTORY / BIOMETRIC RECORDS</p><h2>Enrolled people</h2></div><span class="section-count" id="peopleCount">0</span></div>
+              <div class="table-wrap"><table id="ppl"></table></div>
+            </section>
+
+            <section class="admin-section">
+              <div class="section-title"><div><p class="eyebrow">ACTIVITY / DAILY LOG</p><h2>Attendance records</h2></div><span class="log-indicator"><span class="state-light" aria-hidden="true"></span> LIVE LOG</span></div>
+              <div class="toolbar">
+                <div><label for="d">Date</label><input type="date" id="d"></div>
+                <button class="secondary-button" id="all" type="button">All dates</button>
+                <button class="secondary-button" id="csv" type="button">Export CSV <span aria-hidden="true">↓</span></button>
+                <button class="quiet-button" id="logout" type="button">Log out <span aria-hidden="true">↗</span></button>
+              </div>
+              <div class="table-wrap"><table id="lg"></table></div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <footer><span>MHHS / LOCAL PILOT</span><span>Face matching can be wrong. Keep a correction path and review records before relying on them.</span></footer>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
