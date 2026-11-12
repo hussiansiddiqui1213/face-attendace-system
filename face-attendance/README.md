@@ -14,14 +14,14 @@ $env:ADMIN_PASSWORD = "replace-this-with-a-unique-password-of-at-least-12-charac
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open http://127.0.0.1:8000 and allow camera access. Choose your own long admin password in the environment command on the first start. The app deliberately refuses to initialize without one; there is no default password.
+Open http://127.0.0.1:8000. Camera access is requested only when you choose to start a camera. Choose your own long admin password in the environment command on the first start. The app deliberately refuses to initialize without one; there is no default password.
 
 For macOS/Linux, activate the environment with `source .venv/bin/activate`, set `ADMIN_PASSWORD="your-unique-long-password"`, then run the same `uvicorn` command. The original `uvicorn main:app` entry point remains available for existing launch configurations.
 
 ## Use
 
-- **Kiosk:** scans one face at a time. Students are recorded once per day; staff scans alternate between check-in and check-out. If camera access fails, allow it in the browser and select **Allow / retry camera**. **Enter attendance manually** opens the admin sign-in and manual-entry form for a non-biometric alternative.
-- **Admin:** upload a school/centre roster CSV, filter a daily present/absent report by centre and class, export it to CSV, enroll faces, add manual attendance with a reason, review consent/data status, and erase personal data.
+- **Kiosk:** choose **Start attendance camera** to scan one face at a time; stop it with the same button. Students are recorded once per day; staff scans alternate between check-in and check-out. If camera access fails, allow it in the browser and retry. **Enter attendance manually** opens the admin sign-in and manual-entry form for a non-biometric alternative.
+- **Admin:** choose **Start enrollment camera** separately when adding a face; stop it with the same button. Upload a school/centre roster CSV, filter a daily present/absent report by centre and class, export it to CSV, add manual attendance with a reason, review consent/data status, and erase personal data.
 - **Project settings:** use the gear menu in the top bar to switch between dark and light themes. Admins can change the password from the security settings panel.
 - Admin sessions expire after eight hours. Five failed logins from the same address within 15 minutes are temporarily rate limited.
 
@@ -90,8 +90,10 @@ face-attendance/
 ├── main.py              # Backward-compatible Uvicorn entry point
 ├── static/
 │   ├── index.html
-│   ├── style.css
-│   └── app.js           # Browser interface and camera flow
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── app.js       # Browser interface and camera flow
 ├── attendance.db        # Created on first start; excluded from Git
 ├── requirements.txt
 └── README.md

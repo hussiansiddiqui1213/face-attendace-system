@@ -10,8 +10,11 @@ const localDate = () => {
 const detectorOptions = () => new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
 let activeTab = 'checkin';
-let cameraReady = false;
-let cameraInitializing = false;
+let attendanceCameraReady = false;
+let attendanceCameraInitializing = false;
+let enrollmentCameraReady = false;
+let enrollmentCameraInitializing = false;
+let faceModelsPromise;
 let scanBusy = false;
 let busyUntil = 0;
 let openManualAfterLogin = false;
@@ -45,73 +48,61 @@ function setStatus(element, message, tone = 'muted') {
   element.className = `status ${tone}`;
 }
 
-async function initializeCamera() {
-  const load = $('load');
-  if (cameraReady || cameraInitializing) return;
-  cameraInitializing = true;
-  $('retryCamera').disabled = true;
-  $('cameraState').textContent = 'CAMERA STARTING';
-  $('cameraTag').textContent = 'CAMERA STARTING';
-  load.hidden = false;
-  load.classList.remove('load-error');
-  load.textContent = 'Initializing face models and camera access…';
-  try {
-    await Promise.all([
+function loadFaceModels() {
+  if (!faceModelsPromise) {
+    faceModelsPromise = Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-    ]);
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-      audio: false
+    ]).catch(error => {
+      faceModelsPromise = undefined;
+      throw new Error(`Face models could not load: ${error.message}`);
     });
-    $('v1').srcObject = stream;
-    $('v2').srcObject = stream;
-    cameraReady = true;
-    load.hidden = true;
-    $('retryCamera').hidden = true;
-    $('cameraState').textContent = 'CAMERA ACTIVE';
-    $('cameraTag').textContent = 'LIVE PREVIEW';
-    $('cameraTag').parentElement.classList.add('camera-ready');
-    setStatus($('st'), 'Camera ready. Look toward the lens.', 'muted');
-    scanLoop();
-  } catch (error) {
-    load.classList.add('load-error');
-    load.textContent = `Camera could not start: ${error.message}. Use localhost, allow camera access, and check model downloads.`;
-    $('retryCamera').hidden = false;
-    $('cameraState').textContent = 'CAMERA UNAVAILABLE';
-    $('cameraTag').textContent = 'NO CAMERA FEED';
-    setStatus($('st'), 'Camera unavailable. Ask the administrator for manual attendance.', 'bad');
-  } finally {
-    cameraInitializing = false;
-    $('retryCamera').disabled = false;
   }
+  return faceModelsPromise;
+}
+
+async function openCamera(videoId) {
+  await loadFaceModels();
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+    audio: false
+  });
+  $(videoId).srcObject = stream;
+}
+
+function closeCamera(videoId) {
+  const video = $(videoId);
+  video.srcObject?.getTracks().forEach(track => track.stop());
+  video.srcObject = null;
 }
 
 async function scanLoop() {
-  if (cameraReady && activeTab === 'checkin' && !scanBusy && Date.now() >= busyUntil) {
+  if (attendanceCameraReady && activeTab === 'checkin' && !scanBusy && Date.now() >= busyUntil) {
     scanBusy = true;
     try {
       const detections = await faceapi.detectAllFaces($('v1'), detectorOptions())
         .withFaceLandmarks().withFaceDescriptors();
-      if (detections.length === 0) {
-        setStatus($('st'), 'No face detected. Look toward the camera.', 'muted');
-      } else if (detections.length > 1) {
-        setStatus($('st'), 'More than one face detected. Please scan one person at a time.', 'bad');
-      } else {
-        const result = await api('/checkin', 'POST', { descriptor: Array.from(detections[0].descriptor) });
-        if (result.status === 'ok') {
-          setStatus($('st'), `${result.name}: ${result.type} recorded at ${result.time}.`, 'good');
-          busyUntil = Date.now() + 4000;
-        } else if (result.status === 'already_recorded' || result.status === 'cooldown') {
-          setStatus($('st'), `${result.name}: today's record is already up to date.`, 'good');
-          busyUntil = Date.now() + 3000;
-        } else if (result.status === 'ambiguous') {
-          setStatus($('st'), 'Could not distinguish this face reliably. Please use the staffed desk.', 'bad');
-          busyUntil = Date.now() + 2000;
+      if (attendanceCameraReady) {
+        if (detections.length === 0) {
+          setStatus($('st'), 'No face detected. Look toward the camera.', 'muted');
+        } else if (detections.length > 1) {
+          setStatus($('st'), 'More than one face detected. Please scan one person at a time.', 'bad');
         } else {
-          setStatus($('st'), 'Face not recognised. Please use the staffed desk.', 'bad');
-          busyUntil = Date.now() + 1500;
+          const result = await api('/checkin', 'POST', { descriptor: Array.from(detections[0].descriptor) });
+          if (result.status === 'ok') {
+            setStatus($('st'), `${result.name}: ${result.type} recorded at ${result.time}.`, 'good');
+            busyUntil = Date.now() + 4000;
+          } else if (result.status === 'already_recorded' || result.status === 'cooldown') {
+            setStatus($('st'), `${result.name}: today's record is already up to date.`, 'good');
+            busyUntil = Date.now() + 3000;
+          } else if (result.status === 'ambiguous') {
+            setStatus($('st'), 'Could not distinguish this face reliably. Please use the staffed desk.', 'bad');
+            busyUntil = Date.now() + 2000;
+          } else {
+            setStatus($('st'), 'Face not recognised. Please use the staffed desk.', 'bad');
+            busyUntil = Date.now() + 1500;
+          }
         }
       }
     } catch (error) {
@@ -152,7 +143,85 @@ function openManualAttendance() {
 }
 
 $('openManualAttendance').addEventListener('click', openManualAttendance);
-$('retryCamera').addEventListener('click', initializeCamera);
+$('attendanceCameraToggle').addEventListener('click', async () => {
+  const button = $('attendanceCameraToggle');
+  if (attendanceCameraReady) {
+    closeCamera('v1');
+    attendanceCameraReady = false;
+    button.textContent = 'Start attendance camera';
+    $('cameraState').textContent = 'CAMERA OFF';
+    $('cameraTag').textContent = 'CAMERA OFF';
+    $('cameraTag').parentElement.classList.remove('camera-ready');
+    $('attendanceCameraStatus').textContent = 'Attendance camera is off.';
+    setStatus($('st'), 'Camera off. Start it when you are ready to scan.', 'muted');
+    return;
+  }
+  if (attendanceCameraInitializing) return;
+  attendanceCameraInitializing = true;
+  button.disabled = true;
+  button.textContent = 'Starting attendance camera…';
+  $('cameraState').textContent = 'CAMERA STARTING';
+  $('cameraTag').textContent = 'CAMERA STARTING';
+  $('attendanceCameraStatus').textContent = 'Loading face models and requesting camera access…';
+  try {
+    await openCamera('v1');
+    attendanceCameraReady = true;
+    button.textContent = 'Stop attendance camera';
+    $('cameraState').textContent = 'CAMERA ACTIVE';
+    $('cameraTag').textContent = 'LIVE PREVIEW';
+    $('cameraTag').parentElement.classList.add('camera-ready');
+    $('attendanceCameraStatus').textContent = 'Attendance camera is active.';
+    setStatus($('st'), 'Camera ready. Look toward the lens.', 'muted');
+  } catch (error) {
+    button.textContent = 'Start attendance camera';
+    $('cameraState').textContent = 'CAMERA UNAVAILABLE';
+    $('cameraTag').textContent = 'NO CAMERA FEED';
+    $('attendanceCameraStatus').textContent = `Attendance camera could not start: ${error.message}. Allow camera access and check your connection.`;
+    setStatus($('st'), 'Camera unavailable. Ask the administrator for manual attendance.', 'bad');
+  } finally {
+    attendanceCameraInitializing = false;
+    button.disabled = false;
+  }
+});
+
+$('enrollmentCameraToggle').addEventListener('click', async () => {
+  const button = $('enrollmentCameraToggle');
+  const status = $('enrollmentCameraStatus');
+  if (enrollmentCameraReady) {
+    closeCamera('v2');
+    enrollmentCameraReady = false;
+    button.textContent = 'Start enrollment camera';
+    $('enrollmentCameraTag').textContent = 'CAMERA OFF';
+    $('enrollmentCameraTag').parentElement.classList.remove('camera-ready');
+    status.textContent = 'Enrollment camera is off.';
+    $('cap').disabled = true;
+    $('es').textContent = 'Start the enrollment camera before capturing samples.';
+    return;
+  }
+  if (enrollmentCameraInitializing) return;
+  enrollmentCameraInitializing = true;
+  button.disabled = true;
+  button.textContent = 'Starting enrollment camera…';
+  $('enrollmentCameraTag').textContent = 'CAMERA STARTING';
+  status.textContent = 'Loading face models and requesting camera access…';
+  try {
+    await openCamera('v2');
+    enrollmentCameraReady = true;
+    button.textContent = 'Stop enrollment camera';
+    $('enrollmentCameraTag').textContent = 'LIVE PREVIEW';
+    $('enrollmentCameraTag').parentElement.classList.add('camera-ready');
+    status.textContent = 'Enrollment camera is active.';
+    $('cap').disabled = false;
+    $('es').textContent = 'Enter the person’s details and capture samples when ready.';
+  } catch (error) {
+    button.textContent = 'Start enrollment camera';
+    $('enrollmentCameraTag').textContent = 'NO CAMERA FEED';
+    status.textContent = `Enrollment camera could not start: ${error.message}. Allow camera access and check your connection.`;
+  } finally {
+    enrollmentCameraInitializing = false;
+    button.disabled = false;
+  }
+});
 
 function closeSettingsMenu() {
   $('settingsMenu').hidden = true;
@@ -286,8 +355,8 @@ async function captureSamples() {
     status.textContent = 'Confirm that the person has been informed and consent has been recorded.';
     return;
   }
-  if (!cameraReady) {
-    status.textContent = 'The camera is not ready.';
+  if (!enrollmentCameraReady) {
+    status.textContent = 'Start the enrollment camera before capturing samples.';
     return;
   }
 
@@ -297,7 +366,7 @@ async function captureSamples() {
   const descriptors = [];
   let attempts = 0;
   try {
-    while (descriptors.length < 5 && attempts < 50) {
+    while (descriptors.length < 5 && attempts < 50 && enrollmentCameraReady) {
       attempts += 1;
       const faces = await faceapi.detectAllFaces($('v2'), detectorOptions())
         .withFaceLandmarks().withFaceDescriptors();
@@ -305,6 +374,7 @@ async function captureSamples() {
       status.textContent = `Captured ${descriptors.length} of 5 samples. Turn slightly between captures.`;
       await new Promise(resolve => window.setTimeout(resolve, 700));
     }
+    if (!enrollmentCameraReady) throw new Error('Enrollment camera was stopped before capture finished.');
     if (descriptors.length < 5) throw new Error('Could not capture five clear, single-person samples. Improve lighting and try again.');
     const average = new Array(128).fill(0);
     descriptors.forEach(descriptor => descriptor.forEach((value, index) => { average[index] += value / descriptors.length; }));
@@ -326,7 +396,7 @@ async function captureSamples() {
   } catch (error) {
     status.textContent = error.message;
   } finally {
-    button.disabled = false;
+    button.disabled = !enrollmentCameraReady;
   }
 }
 $('cap').addEventListener('click', captureSamples);
@@ -576,9 +646,9 @@ $('csv').addEventListener('click', () => {
 });
 
 window.addEventListener('beforeunload', () => {
-  [$('v1'), $('v2')].forEach(video => video.srcObject?.getTracks().forEach(track => track.stop()));
+  ['v1', 'v2'].forEach(closeCamera);
 });
 
 showAdmin();
 applyTheme(localStorage.getItem('mhhs-theme') || 'dark');
-initializeCamera();
+scanLoop();

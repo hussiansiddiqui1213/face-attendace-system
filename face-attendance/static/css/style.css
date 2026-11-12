@@ -245,6 +245,8 @@ video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cov
 .camera-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .camera-caption { display: flex; align-items: center; gap: 8px; padding: 11px 2px 0; color: var(--muted); font-size: 10px; }
 .camera-tools .secondary-button { margin-top: 9px; }
+.camera-tools .upload-hint { margin: 0; }
+.enrollment-camera-column { min-width: 0; }
 .camera-tag.camera-ready .tag-light { background: var(--cyan); box-shadow: 0 0 10px rgba(102, 228, 206, .72); }
 .kiosk-manual { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 8px; background: rgba(17, 26, 36, .72); color: var(--muted); font-size: 11px; }
 .kiosk-manual .upload-hint { margin: 0; }

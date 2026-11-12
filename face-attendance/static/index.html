@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080d14">
   <meta name="description" content="MHHS Attendance System for attendance records and administration.">
   <title>MHHS Attendance System</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
   <div class="app-shell">
@@ -43,8 +43,6 @@
         <span class="notice-icon" aria-hidden="true">i</span>
         <span><strong>LOCAL PILOT</strong> &nbsp; Not for consequential attendance decisions without human review and a non-biometric alternative.</span>
       </div>
-      <div id="load" class="load-state" role="status"><span class="loader" aria-hidden="true"></span> Initializing face models and camera access…</div>
-
       <section id="checkin" class="on" role="tabpanel">
         <div class="page-heading">
           <div>
@@ -52,7 +50,7 @@
             <h1>Attendance <span>kiosk</span></h1>
             <p class="heading-copy">Position yourself in frame to register today’s attendance.</p>
           </div>
-          <div class="live-label"><span class="pulse-dot" aria-hidden="true"></span><span id="cameraState">CAMERA STARTING</span><span class="label-divider"></span><span>LOCAL PROCESSING</span></div>
+          <div class="live-label"><span class="pulse-dot" aria-hidden="true"></span><span id="cameraState">CAMERA OFF</span><span class="label-divider"></span><span>LOCAL PROCESSING</span></div>
         </div>
 
         <div class="kiosk-grid">
@@ -62,19 +60,20 @@
               <div class="camera-vignette" aria-hidden="true"></div>
               <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
               <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
-              <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span><span id="cameraTag">CAMERA STARTING</span></span><span class="camera-code">CAM / 01</span></div>
+              <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span><span id="cameraTag">CAMERA OFF</span></span><span class="camera-code">CAM / 01</span></div>
               <div class="scan-guide" aria-hidden="true"><span></span></div>
               <div class="camera-bottomline"><span>FACE SCAN AREA</span><span class="camera-resolution">640 × 480</span></div>
             </div>
             <div class="camera-tools">
               <div class="camera-caption"><span class="caption-icon" aria-hidden="true">◉</span> Your camera feed stays in this browser. No photos are uploaded.</div>
-              <button class="secondary-button" id="retryCamera" type="button" hidden>Allow / retry camera</button>
+              <button class="secondary-button" id="attendanceCameraToggle" type="button">Start attendance camera</button>
             </div>
+            <p class="upload-hint" id="attendanceCameraStatus" role="status">Attendance camera is off. Start it when you are ready to scan.</p>
           </div>
           <div class="kiosk-side">
             <div class="status-panel">
               <div class="panel-topline"><p class="eyebrow">RECOGNITION STATUS</p><span class="status-index">01 — READY</span></div>
-              <div class="status" id="st" aria-live="polite">Look toward the camera.</div>
+              <div class="status" id="st" aria-live="polite">Camera off. Start it when you are ready to scan.</div>
               <div class="status-track" aria-hidden="true"><span></span></div>
               <div class="scan-meta"><span class="meta-label">MODE</span><span>Automatic recognition</span></div>
               <div class="scan-meta"><span class="meta-label">ACCESS</span><span>One person at a time</span></div>
@@ -182,13 +181,19 @@
             <section class="admin-section enrollment-section">
               <div class="section-title"><div><p class="eyebrow">PEOPLE / ENROLLMENT</p><h2>Add a person</h2></div><span class="section-icon" aria-hidden="true">＋</span></div>
               <div class="enroll-grid">
-                <div class="camera-frame admin-camera">
-                  <video id="v2" autoplay muted playsinline aria-label="Live camera preview for enrollment"></video>
-                  <div class="camera-vignette" aria-hidden="true"></div>
-                  <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
-                  <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
-                  <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span> ENROLLMENT FEED</span></div>
-                  <div class="scan-guide" aria-hidden="true"><span></span></div>
+                <div class="enrollment-camera-column">
+                  <div class="camera-frame admin-camera">
+                    <video id="v2" autoplay muted playsinline aria-label="Live camera preview for enrollment"></video>
+                    <div class="camera-vignette" aria-hidden="true"></div>
+                    <div class="camera-corner corner-tl" aria-hidden="true"></div><div class="camera-corner corner-tr" aria-hidden="true"></div>
+                    <div class="camera-corner corner-bl" aria-hidden="true"></div><div class="camera-corner corner-br" aria-hidden="true"></div>
+                    <div class="camera-topline"><span class="camera-tag"><span class="tag-light"></span><span id="enrollmentCameraTag">CAMERA OFF</span></span></div>
+                    <div class="scan-guide" aria-hidden="true"><span></span></div>
+                  </div>
+                  <div class="camera-tools">
+                    <button class="secondary-button" id="enrollmentCameraToggle" type="button">Start enrollment camera</button>
+                    <p class="upload-hint" id="enrollmentCameraStatus" role="status">Enrollment camera is off.</p>
+                  </div>
                 </div>
                 <div class="form-stack">
                   <div class="field-pair">
@@ -202,7 +207,7 @@
                     <div><label for="groupName">Class / group</label><input id="groupName" maxlength="120" placeholder="e.g. Grade 8 A"></div>
                   </div>
                   <label class="consent-check"><input id="consent" type="checkbox"><span>I have explained the biometric processing and recorded the person's consent.</span></label>
-                  <button class="primary-button" id="cap" type="button"><span>Capture 5 samples</span><span aria-hidden="true">⌖</span></button>
+                  <button class="primary-button" id="cap" type="button" disabled><span>Capture 5 samples</span><span aria-hidden="true">⌖</span></button>
                   <p class="status-line" id="es" aria-live="polite"></p>
                 </div>
               </div>
@@ -287,6 +292,6 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

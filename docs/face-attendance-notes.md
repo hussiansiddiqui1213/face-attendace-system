@@ -47,8 +47,10 @@ face-attendance/
 ├── attendance.db      # created automatically on first run
 └── static/
     ├── index.html     # web interface
-    ├── style.css
-    └── app.js         # camera, face detection, admin panel
+    ├── css/
+    │   └── style.css
+    └── js/
+        └── app.js     # camera, face detection, admin panel
 ```
 
 ### How to run (VS Code)
